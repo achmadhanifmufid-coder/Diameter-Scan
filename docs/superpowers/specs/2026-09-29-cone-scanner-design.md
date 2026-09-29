@@ -47,13 +47,16 @@ Tahap 1 terdiri dari web app sederhana dan PoC yang membuktikan **hasil kamera �
 ```
 D:\hanif\Scan\
 ├── index.html        tampilan + penghubung (input foto, overlay, daftar, CSV, pilihan ukuran)
-├── measure.js        inti: deteksi grid, ukur tepi, kalibrasi, status, format CSV
+├── measure.js        inti: deteksi grid, ukur tepi, kalibrasi, status
+├── homography.js     matematika homografi (tray mm ↔ foto px)
+├── csv.js            format CSV untuk Excel
 ├── config.js         ukuran bawaan, toleransi, data tray, kalibrasi, ambang kualitas
 ├── package.json      "type": "module", skrip test
 ├── test/             uji otomatis (node --test) + pembuat gambar buatan
-├── tools/report.js   laporan PoC: kamera vs gauge + pengecekan 6 kriteria
+├── tools/            report.js (laporan PoC), make-demo.js (gambar demo)
+├── demo/             foto tray buatan untuk mencoba app tanpa tray fisik
 ├── samples/          foto asli untuk uji regresi
-└── poc/              data PoC: gauge.csv, layout_*.csv, CSV hasil scan
+└── poc/              data PoC: gauge.csv, layout_*.csv, scans/*.csv
 ```
 
 ## 5. Cara app mengukur
@@ -66,10 +69,12 @@ Masukan: foto (`File`), ukuran nominal, dan `config`. Keluaran: hasil per posisi
    - Dari jarak dan arah antar kandidat yang bertetangga, tentukan dua arah grid serta indeks baris dan kolom setiap kandidat.
    - Hitung **homografi** dari koordinat tray dalam mm (berdasarkan jarak lubang) ke koordinat piksel. Titik yang menyimpang dibuang, lalu homografi dihitung ulang.
    - Hasilnya: perkiraan posisi ke-100 slot, skala, dan koreksi kemiringan HP. A1 adalah slot kiri atas pada foto.
-   - Minimal 20 cone harus cocok ke grid supaya homografi bisa dihitung. Tray yang tidak penuh tetap bisa discan; slot tanpa cone berstatus CEK MANUAL.
+   - Minimal 20 cone harus cocok ke grid, dan minimal 70% kandidat harus cocok (kalau tidak, tebakan grid dianggap salah).
+   - Grid 10×10 harus terlihat utuh: baris dan kolom paling luar harus punya minimal satu cone, atau lubang kosong yang tampak sebagai lingkaran gelap. Tanpa itu label posisi bisa bergeser, jadi app menampilkan error "tray tidak utuh".
+   - Slot tanpa cone di dalam grid berstatus CEK MANUAL.
 4. **Cari tepi bukaan di setiap slot**, pada resolusi penuh.
    - Tarik 180 garis dari titik tengah, setiap 2°.
-   - Jendela pencarian: jari-jari nominal ± 1 mm.
+   - Jendela pencarian: jari-jari nominal ± 2 mm. Jendela ini cukup lebar supaya cone dari ukuran lain tetap terukur ketika operator salah memilih ukuran, sehingga peringatannya bisa muncul.
    - Tepi adalah titik perubahan terang-gelap yang paling kuat. Polaritasnya (gelap-ke-terang atau sebaliknya) disetel dari foto asli.
    - Posisi tepi dihitung sampai sub-piksel dengan interpolasi parabola.
 5. **Hitung diameter dalam mm.**
@@ -84,10 +89,10 @@ Masukan: foto (`File`), ukuran nominal, dan `config`. Keluaran: hasil per posisi
    - **PASS** jika nominal − 0,20 ≤ `d_kal` ≤ nominal + 0,20. Nilai tepat di batas dihitung PASS.
    - **REJECT** untuk selain itu.
 8. **Pemeriksaan tingkat tray.**
-   - Kalau median `d_kal` berjarak lebih dari 0,35 mm dari ukuran nominal, muncul peringatan "Cek pilihan ukuran" beserta saran ukuran terdekat. App **tidak pernah** mengganti ukuran secara otomatis, karena mesin yang bergeser bisa membuat tebakan otomatis meloloskan cone yang salah.
-   - Kalau kualitas foto kurang, app menampilkan pesan dan meminta foto ulang. Yang dianggap kurang: tray tidak terlihat utuh, kurang dari 20 cone cocok ke grid, skala < 6 px/mm, atau foto buram (ketajaman tepi di bawah ambang).
+   - Kalau median `d_kal` berjarak lebih dari 0,35 mm dari ukuran nominal, muncul peringatan "Cek pilihan ukuran" beserta saran ukuran terdekat. Median dihitung dari semua slot yang fit-nya baik, termasuk yang di luar nominal ± 1,5 mm. App **tidak pernah** mengganti ukuran secara otomatis, karena mesin yang bergeser bisa membuat tebakan otomatis meloloskan cone yang salah.
+   - Kalau kualitas foto kurang, app menampilkan pesan dan meminta foto ulang. Yang dianggap kurang: tray tidak terlihat utuh, kurang dari 20 cone cocok ke grid, skala < 6 px/mm, atau foto buram (lebar tepi/blur > 0,35 mm; di atas itu blur menggeser diameter lebih dari 0,02 mm). Lebar tepi dihitung dari kontras ÷ gradien puncak, jadi tidak terpengaruh terang-gelapnya foto.
 
-Semua ambang (70% titik valid, RMS 0,10 mm, jendela ±1 mm, ±1,5 mm, 0,35 mm, 6 px/mm, 20 cone, ketajaman) adalah konstanta di `config.js`. Nilainya adalah titik awal dan disetel dengan foto asli saat PoC.
+Semua ambang (70% titik valid, RMS 0,10 mm, jendela ±2 mm, ±1,5 mm, 0,35 mm ukuran, 6 px/mm, 20 cone, blur 0,35 mm) adalah konstanta di `config.js`. Nilainya adalah titik awal dan disetel dengan foto asli saat PoC.
 
 **Target waktu:** ≤ 3 detik dari foto dipilih sampai hasil tampil.
 
@@ -120,12 +125,15 @@ Semua ambang (70% titik valid, RMS 0,10 mm, jendela ±1 mm, ±1,5 mm, 0,35 mm, 6
   - Peringatan, misalnya salah pilih ukuran atau kualitas foto.
   - Tombol **Scan lagi** dan **Download CSV**.
 - Bahasa Indonesia. Selain warna, selalu ada simbol atau teks, supaya tetap terbaca oleh operator yang buta warna.
+- **Mode demo:** `index.html?demo=demo/tray-12.5.png` langsung memproses foto tray buatan. Gunanya untuk mencoba app di HP, atau menunjukkannya ke atasan, sebelum tray dan stand siap. Hanya file dari situs yang sama yang diterima.
 
 **CSV:** satu baris per slot. Pemisah `;`, desimal `,`, dan UTF-8 dengan BOM, supaya langsung terbaca benar di Excel berbahasa Indonesia (akan dicek di Excel user saat PoC).
 
 ```
-waktu;file_foto;catatan;ukuran;batas_bawah;batas_atas;posisi;diameter_mm;diameter_mentah_mm;diameter_min_mm;diameter_maks_mm;status;titik_valid;rms_mm;px_per_mm
+waktu;file_foto;catatan;ukuran;batas_bawah;batas_atas;posisi;diameter_mm;diameter_mentah_mm;diameter_min_mm;diameter_maks_mm;status;titik_valid;rms_mm;px_per_mm;durasi_ms
 ```
+
+`durasi_ms` adalah waktu dari foto dipilih sampai hasil tampil. Kolom ini dipakai untuk mengecek kriteria 6 PoC.
 
 Nama file: `scan_YYYY-MM-DD_HH-MM-SS_<ukuran>.csv`. Nilai `status` adalah `PASS`, `REJECT`, atau `CEK_MANUAL`.
 
@@ -144,7 +152,7 @@ Satu file yang sama untuk semua HP, diperbarui lewat deploy:
 ### Persiapan (dikerjakan user, ±3–4 jam)
 
 1. Siapkan stand HP ±40 cm dan lampu.
-2. Ukur jarak lubang tray, untuk satu baris dan satu kolom.
+2. Ukur jarak lubang tray, untuk satu baris dan satu kolom. Lakukan pada 3 tray fisik yang berbeda, untuk mengecek apakah semua tray sama.
 3. Siapkan sampel utama: **30 cone 12,5 mm** yang diberi nomor.
    - Sekitar 5 cone di masing-masing kisaran 12,3 / 12,4 / 12,5 / 12,6 / 12,7.
    - Beberapa cone < 12,3, beberapa > 12,7, dan beberapa yang oval.
@@ -156,6 +164,7 @@ Satu file yang sama untuk semua HP, diperbarui lewat deploy:
 
 - `poc/gauge.csv`: `cone_id;ukuran;gauge_1;gauge_2;gauge_3;operator`
 - `poc/layout_<nama>.csv`: `posisi;cone_id`, yaitu posisi setiap sampel di tray untuk satu susunan.
+- `poc/scans/*.csv`: CSV hasil scan yang di-download dari app.
 - Kolom catatan di app diisi dengan format `layout=<nama> hp=<model> lampu=<n> uji=<n>`. Format ini dibaca oleh `tools/report.js`.
 - Foto asli dari galeri disalin ke `samples/`.
 
@@ -175,7 +184,7 @@ Satu file yang sama untuk semua HP, diperbarui lewat deploy:
 Kalibrasi (a, b) dihitung dari uji 2 dengan HP pertama, memakai rata-rata 5 scan per cone. Kriteria 2 dan 3 dicek pada data yang **tidak** dipakai untuk kalibrasi (uji 3–5).
 
 1. **Pengulangan:** selisih setiap scan terhadap rata-rata cone tersebut ≤ 0,03 mm untuk ≥ 95% pengukuran (uji 2 dan 3).
-2. **Akurasi:** selisih kamera terhadap rata-rata gauge ≤ 0,05 mm untuk ≥ 95% cone.
+2. **Akurasi:** selisih kamera terhadap rata-rata gauge ≤ 0,05 mm untuk ≥ 95% pengukuran. Setiap scan dihitung sendiri-sendiri, karena di produksi operator hanya memotret sekali.
 3. **Keputusan:** PASS/REJECT sama dengan gauge untuk semua cone yang rata-rata gauge-nya berjarak lebih dari 0,05 mm dari batas.
 4. **Antar HP dan posisi:** selisih rata-rata setiap HP terhadap HP pertama ≤ 0,02 mm (uji 5), dan selisih rata-rata posisi tengah vs pinggir ≤ 0,02 mm (uji 4).
 5. **CEK MANUAL:** ≤ 2 per 100 cone pada setiap scan tray penuh.
@@ -200,12 +209,13 @@ Kalau pengukuran ulang gauge sendiri berselisih lebih dari 0,05 mm (2×SD), amba
 
 - Memakai `node --test`, tanpa framework.
 - **Gambar buatan** dibuat oleh kode uji: grid 10×10 lingkaran gelap berukuran pasti di latar terang, dengan anti-aliasing, blur, dan noise. Ada juga varian oval dan varian perspektif (HP miring). Yang harus lolos:
-  - Diameter terukur sama dengan diameter sebenarnya, selisih ≤ 0,01 mm pada resolusi ≥ 8 px/mm.
-  - Untuk oval: `d_rata` ≈ (sumbu panjang + sumbu pendek)/2, dan `d_min`/`d_maks` mendekati kedua sumbu.
+  - Diameter terukur sama dengan diameter sebenarnya: rata-rata selisih ≤ 0,01 mm dan selisih terbesar ≤ 0,02 mm, pada resolusi 8 px/mm.
+  - Untuk oval 13×12 mm: `d_rata` berjarak ≤ 0,03 mm dari (sumbu panjang + sumbu pendek)/2, dan `d_min`/`d_maks` berjarak ≤ 0,05 mm dari kedua sumbu.
   - Varian perspektif tetap memberi hasil benar setelah homografi.
   - A1 berada di kiri atas, dan slot kosong berstatus CEK MANUAL.
   - Batas status untuk nominal 12,5: 12,30 dan 12,70 → PASS; 12,29 dan 12,71 → REJECT.
   - Peringatan salah pilih ukuran muncul saat seharusnya.
+  - Foto kosong, tray tidak utuh, resolusi < 6 px/mm, dan foto buram masing-masing memberi error yang sesuai.
 - **Uji format CSV:** pemisah dan desimal koma.
 - **Setelah foto asli dan data gauge tersedia:** foto di `samples/` dijadikan uji regresi, supaya hasil tidak bergeser tanpa sengaja. Uji ini memakai decoder JPEG khusus uji (dependensi dev saja).
 - **`tools/report.js`:** menghitung a dan b, lalu mengecek 6 kriteria PoC dari folder `poc/`.
@@ -239,5 +249,7 @@ Kalau pengukuran ulang gauge sendiri berselisih lebih dari 0,05 mm (2×SD), amba
 | Distorsi lensa | Uji 4 | Koreksi distorsi |
 | Gauge sendiri kurang konsisten | Pengukuran gauge 3 kali | Tinjau ulang kriteria 2 |
 | Jarak lubang tray seragam | Pengukuran tray | Ukur beberapa baris dan kolom |
+| Jarak lubang sama di semua tray fisik (kalau beda 0,1%, diameter ikut bergeser 0,01 mm) | Ukur 3 tray | Pakai rata-rata, atau tandai tray dan simpan jarak per tray |
+| Lubang kosong tampak seperti bukaan cone dan terbaca PASS | Foto asli dengan beberapa lubang kosong | Tambah pembeda lubang kosong di algoritma |
 | Batas memori canvas di iPhone | Cek manual di iPhone | Perkecil foto > 16 MP |
 | Format CSV di Excel user | Buka CSV di Excel user | Ganti pemisah atau desimal |
