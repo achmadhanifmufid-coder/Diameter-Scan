@@ -448,7 +448,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `cand`: array sepanjang `rows·cols`, indeks `row·cols + col` → kandidat `{x, y}` atau `null`.
     - `error`: `'TOO_FEW_CONES'` atau `'TRAY_NOT_COMPLETE'`.
 
-- [ ] **Step 1: Tulis uji yang gagal — `test/grid.test.js`**
+- [x] **Step 1: Tulis uji yang gagal — `test/grid.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -508,18 +508,18 @@ test('fitGrid: tray terpotong + miring ekstrem → TRAY_NOT_COMPLETE, bukan hasi
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/grid.test.js`
 Expected: FAIL — `findCandidates is not a function` (atau SyntaxError: export tidak ditemukan)
 
-- [ ] **Step 3: Tambah import di baris pertama `measure.js` (tepat di bawah komentar judul)**
+- [x] **Step 3: Tambah import di baris pertama `measure.js` (tepat di bawah komentar judul)**
 
 ```js
 import { apply, invert, localScale, fitHomography } from './homography.js';
 ```
 
-- [ ] **Step 4: Tambah `findCandidates` dan `fitGrid` di akhir `measure.js`**
+- [x] **Step 4: Tambah `findCandidates` dan `fitGrid` di akhir `measure.js`**
 
 ```js
 // Bukaan cone = blob gelap yang kira-kira bulat. Dicari di salinan kecil (±1000 px) supaya cepat.
@@ -628,12 +628,12 @@ export function fitGrid(cands, cfg) {
 }
 ```
 
-- [ ] **Step 5: Jalankan uji, pastikan lolos**
+- [x] **Step 5: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 12` · `ℹ pass 12` · `ℹ fail 0`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add measure.js test/grid.test.js
