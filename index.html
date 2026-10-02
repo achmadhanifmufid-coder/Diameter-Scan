@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QC Scanner Cone</title>
+<style>
+  :root { --ink: #1f2328; --muted: #59636e; --bg: #ffffff; --line: #d1d9e0; --pass: #1a7f37; --reject: #cf222e; --check: #bc4c00; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #f0f6fc; --muted: #9198a1; --bg: #0d1117; --line: #3d444d; --pass: #3fb950; --reject: #f85149; --check: #db6d28; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.45 system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  main { max-width: 760px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 1.25rem; margin: 0 0 12px; }
+  button { font: inherit; color: inherit; background: none; border: 1px solid var(--line); border-radius: 8px; min-height: 44px; padding: 0 14px; cursor: pointer; }
+  .sizes { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+  .sizes button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .muted { color: var(--muted); }
+  label.field { display: block; margin: 12px 0; }
+  input[type="text"] { width: 100%; min-height: 44px; font: inherit; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: none; color: inherit; }
+  .scan { display: block; margin: 16px 0; padding: 18px; border-radius: 12px; background: #1a7f37; color: #fff; font-size: 1.3rem; font-weight: 700; text-align: center; cursor: pointer; }
+  .summary { font-size: 1.2rem; font-weight: 700; }
+  .pass { color: var(--pass); } .reject { color: var(--reject); } .check { color: var(--check); }
+  canvas { display: block; width: 100%; height: auto; margin: 12px 0; border-radius: 8px; }
+  .actions { display: flex; gap: 8px; } .actions button { flex: 1; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>QC Scanner Cone</h1>
+  <div>Ukuran cone:</div>
+  <div class="sizes" id="sizes"></div>
+  <button id="delSize" hidden></button>
+  <p id="tol" class="muted"></p>
+  <label class="field">Catatan (opsional)<input type="text" id="note" autocomplete="off"></label>
+  <label class="scan">📷 SCAN<input type="file" id="file" accept="image/*" hidden></label>
+  <p id="msg" role="status"></p>
+  <section id="result" hidden>
+    <p class="summary" id="summary"></p>
+    <p class="check" id="warn"></p>
+    <canvas id="view" aria-label="Foto tray dengan hasil per cone"></canvas>
+    <p id="detail" class="muted">Ketuk sebuah cone untuk melihat detailnya.</p>
+    <p id="rejects" class="reject"></p>
+    <p id="checks" class="check"></p>
+    <div class="actions"><button id="again">Scan lagi</button><button id="csv">Download CSV</button></div>
+  </section>
+</main>
+<script type="module">
+import { CONFIG } from './config.js';
+import { toGray, measureTray } from './measure.js';
+import { fmt, toCsv, csvFileName } from './csv.js';
+
+const $ = (id) => document.getElementById(id);
+const load = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
+const save = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} };
+const label = (mm) => String(mm).replace('.', ',');
+const COLOR = { PASS: '#1a7f37', REJECT: '#cf222e', CEK_MANUAL: '#bc4c00' };
+const MARK = { PASS: '🟢 PASS', REJECT: '❌ REJECT', CEK_MANUAL: '⚠️ CEK MANUAL' };
+const ERRORS = {
+  TOO_FEW_CONES: 'Cone tidak terdeteksi (kurang dari 20). Pastikan seluruh tray terlihat dan lampu menyala.',
+  TRAY_NOT_COMPLETE: 'Tray tidak terlihat utuh 10×10. Geser tray atau HP supaya seluruh tray masuk foto.',
+  LOW_RESOLUTION: 'Resolusi terlalu rendah. Pakai kamera utama (1×) tanpa zoom, jarak ±40 cm.',
+  BLURRY: 'Foto buram. Ulangi dengan HP diam (pakai timer 2 detik) dan lampu cukup terang.',
+  READ_FAILED: 'Foto tidak bisa dibaca. Coba foto ulang.',
+};
+
+let custom = load('customSizes', []);
+let size = load('size', CONFIG.sizesMm[0]);
+let last = null;
+
+function renderSizes() {
+  const all = [...CONFIG.sizesMm, ...custom];
+  if (!all.includes(size)) size = all[0];
+  const buttons = all.map((mm) => {
+    const b = document.createElement('button');
+    b.textContent = label(mm);
+    b.setAttribute('aria-pressed', String(mm === size));
+    b.onclick = () => { size = mm; save('size', size); renderSizes(); };
+    return b;
+  });
+  const add = document.createElement('button');
+  add.textContent = '+';
+  add.setAttribute('aria-label', 'Tambah ukuran');
+  add.onclick = addSize;
+  $('sizes').replaceChildren(...buttons, add);
+  $('delSize').hidden = !custom.includes(size);
+  $('delSize').textContent = `Hapus ukuran ${label(size)}`;
+  $('tol').textContent = `Toleransi: ${fmt(size - CONFIG.toleranceMm)}–${fmt(size + CONFIG.toleranceMm)} mm 🔒`;
+}
+
+function addSize() {
+  const text = prompt('Ukuran baru (mm), misalnya 13,2:');
+  if (text === null) return;
+  const mm = Math.round(Number(text.trim().replace(',', '.')) * 100) / 100;
+  if (!(mm >= 5 && mm <= 20) || [...CONFIG.sizesMm, ...custom].includes(mm)) {
+    alert('Ukuran harus angka 5–20 mm dan belum ada di daftar.');
+    return;
+  }
+  custom = [...custom, mm].sort((a, b) => b - a);
+  size = mm;
+  save('customSizes', custom);
+  save('size', size);
+  renderSizes();
+}
+
+$('delSize').onclick = () => {
+  if (!confirm(`Hapus ukuran ${label(size)}?`)) return;
+  custom = custom.filter((mm) => mm !== size);
+  size = CONFIG.sizesMm[0];
+  save('customSizes', custom);
+  save('size', size);
+  renderSizes();
+};
+
+$('note').value = load('note', '');
+$('note').onchange = () => save('note', $('note').value);
+$('file').onchange = () => { const f = $('file').files[0]; if (f) scan(f, f.name); };
+$('again').onclick = () => { $('file').value = ''; $('file').click(); };
+$('csv').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([toCsv(last.result, last)], { type: 'text/csv' }));
+  a.download = csvFileName(last.time, last.result.nominalMm);
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+
+function showError(code) {
+  $('msg').className = 'reject';
+  $('msg').textContent = ERRORS[code] ?? code;
+}
+
+async function scan(blob, fileName) {
+  const t0 = performance.now();
+  $('result').hidden = true;
+  $('msg').className = '';
+  $('msg').textContent = 'Mengukur…';
+  await new Promise((r) => setTimeout(r, 30)); // beri waktu teks "Mengukur…" tampil
+  let bitmap;
+  try { bitmap = await createImageBitmap(blob); } catch { return showError('READ_FAILED'); }
+  const k = Math.min(1, Math.sqrt(CONFIG.maxImagePx / (bitmap.width * bitmap.height)));
+  const w = Math.round(bitmap.width * k), h = Math.round(bitmap.height * k);
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  const result = measureTray(toGray(ctx.getImageData(0, 0, w, h).data, w, h), w, h, size, CONFIG, [...CONFIG.sizesMm, ...custom]);
+  if (!result.ok) return showError(result.error);
+  last = { result, time: new Date(), fileName, note: $('note').value };
+  draw(result, bitmap, w);
+  last.ms = Math.round(performance.now() - t0);
+  $('msg').textContent = `Selesai dalam ${label((last.ms / 1000).toFixed(1))} detik.`;
+}
+
+function draw(result, bitmap, w) {
+  const view = $('view'), k = Math.min(1, 1600 / w);
+  view.width = Math.round(w * k);
+  view.height = Math.round((bitmap.height * w * k) / bitmap.width);
+  const g = view.getContext('2d');
+  g.drawImage(bitmap, 0, 0, view.width, view.height);
+  const r0 = (result.nominalMm / 2) * result.pxPerMm * k; // jari-jari nominal di layar
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  for (const s of result.slots) {
+    const x = s.x * k, y = s.y * k;
+    g.strokeStyle = g.fillStyle = COLOR[s.status];
+    g.lineWidth = Math.max(2, r0 * 0.08);
+    if (s.rPx) { g.beginPath(); g.arc(x, y, s.rPx * k, 0, 2 * Math.PI); g.stroke(); }
+    if (s.status === 'PASS') {
+      g.beginPath(); g.arc(x, y, r0 * 0.35, 0, 2 * Math.PI); g.fill();
+    } else if (s.status === 'REJECT') {
+      const d = r0 * 0.5;
+      g.lineWidth = Math.max(3, r0 * 0.2);
+      g.beginPath(); g.moveTo(x - d, y - d); g.lineTo(x + d, y + d); g.moveTo(x + d, y - d); g.lineTo(x - d, y + d); g.stroke();
+    } else {
+      g.font = `bold ${Math.round(r0 * 1.2)}px system-ui`;
+      g.fillText('?', x, y);
+    }
+  }
+  g.font = `bold ${Math.round(r0 * 0.9)}px system-ui`; // label baris A–J dan kolom 1–10
+  g.lineWidth = Math.max(3, r0 * 0.25);
+  g.strokeStyle = '#fff';
+  g.fillStyle = '#000';
+  const text = (t, x, y) => { g.strokeText(t, x, y); g.fillText(t, x, y); };
+  for (const s of result.slots) {
+    if (s.col === 0) text(s.pos[0], s.x * k - r0 * 1.8, s.y * k);
+    if (s.row === 0) text(String(s.col + 1), s.x * k, s.y * k - r0 * 1.8);
+  }
+  const n = result.counts, span = (cls, text) => Object.assign(document.createElement('span'), { className: cls, textContent: text });
+  $('summary').replaceChildren(`${label(result.nominalMm)} mm · `, span('pass', `🟢 ${n.PASS}`), '  ', span('reject', `❌ ${n.REJECT}`), '  ', span('check', `⚠️ ${n.CEK_MANUAL}`));
+  $('warn').textContent = result.warnings.map((wn) => `⚠️ Rata-rata cone ${fmt(wn.medianMm)} mm, jauh dari ukuran yang dipilih (${label(result.nominalMm)}). Cek pilihan ukuran — terdekat: ${label(wn.suggestedMm)}.`).join(' ');
+  const list = (status) => result.slots.filter((s) => s.status === status);
+  $('rejects').textContent = list('REJECT').length ? `❌ REJECT: ${list('REJECT').map((s) => `${s.pos} ${fmt(s.dMm)}`).join(' · ')}` : '';
+  $('checks').textContent = list('CEK_MANUAL').length ? `⚠️ CEK MANUAL: ${list('CEK_MANUAL').map((s) => s.pos).join(' · ')}` : '';
+  $('detail').textContent = 'Ketuk sebuah cone untuk melihat detailnya.';
+  view.onclick = (e) => {
+    const rect = view.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * view.width / k, y = ((e.clientY - rect.top) / rect.height) * view.height / k;
+    const s = result.slots.reduce((a, b) => (Math.hypot(a.x - x, a.y - y) <= Math.hypot(b.x - x, b.y - y) ? a : b));
+    $('detail').textContent = s.dMm === undefined
+      ? `${s.pos} · ${MARK[s.status]} · tepi bukaan tidak ditemukan`
+      : `${s.pos} · ${fmt(s.dMm)} mm · ${MARK[s.status]} · min ${fmt(s.dMinMm)} / maks ${fmt(s.dMaxMm)} · terima ${fmt(result.lowerMm)}–${fmt(result.upperMm)} mm`;
+  };
+  $('result').hidden = false;
+}
+
+renderSizes();
+const demo = new URLSearchParams(location.search).get('demo'); // mis. ?demo=demo/tray-12.5.png
+if (demo && new URL(demo, location.href).origin === location.origin) {
+  fetch(demo).then((r) => r.blob()).then((b) => scan(b, demo.split('/').pop()));
+}
+</script>
+</body>
+</html>

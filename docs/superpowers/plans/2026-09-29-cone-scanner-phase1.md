@@ -1042,7 +1042,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `CONFIG`; `toGray`, `measureTray`, `Result` (Task 4); `fmt`, `toCsv`, `csvFileName` (Task 5); `makeTray` (Task 2).
 - Produces: halaman `index.html`. Parameter URL `?demo=<path same-origin>` langsung memproses gambar itu.
 
-- [ ] **Step 1: Tulis `tools/make-demo.js`**
+- [x] **Step 1: Tulis `tools/make-demo.js`**
 
 ```js
 // Membuat foto tray buatan untuk mencoba app tanpa tray fisik: node tools/make-demo.js → demo/tray-12.5.png
@@ -1076,12 +1076,12 @@ writeFileSync('demo/tray-12.5.png', png(t.gray, t.width, t.height));
 console.log(`demo/tray-12.5.png ${t.width}×${t.height}`);
 ```
 
-- [ ] **Step 2: Buat gambar demo**
+- [x] **Step 2: Buat gambar demo**
 
 Run: `node tools/make-demo.js`
 Expected: `demo/tray-12.5.png 1540×1540` (file ±1,1 MB)
 
-- [ ] **Step 3: Tulis `index.html`**
+- [x] **Step 3: Tulis `index.html`**
 
 ```html
 <!doctype html>
@@ -1300,7 +1300,7 @@ if (demo && new URL(demo, location.href).origin === location.origin) {
 </html>
 ```
 
-- [ ] **Step 4: Ganti isi `.claude/launch.json` supaya menyajikan folder repo**
+- [x] **Step 4: Ganti isi `.claude/launch.json` supaya menyajikan folder repo**
 
 ```json
 {
@@ -1316,7 +1316,7 @@ if (demo && new URL(demo, location.href).origin === location.origin) {
 }
 ```
 
-- [ ] **Step 5: Verifikasi di browser (desktop)**
+- [x] **Step 5: Verifikasi di browser (desktop)**
 
 Jalankan server lewat preview "scan-cone", atau `python -m http.server 8000` dari folder repo. Buka `http://localhost:8000/?demo=demo/tray-12.5.png`. Yang harus terlihat:
 - Teks status `Selesai dalam 0,x detik.` (di bawah 3 detik).
@@ -1331,19 +1331,21 @@ Jalankan server lewat preview "scan-cone", atau `python -m http.server 8000` dar
 - Klik **+**, isi `abc`: muncul alert `Ukuran harus angka 5–20 mm dan belum ada di daftar.`
 - Klik **Download CSV**: file `scan_…_12.5.csv` terunduh. Buka di Excel dan pastikan kolomnya terpisah benar dan angkanya berkoma.
 
-- [ ] **Step 6: Verifikasi di layar HP**
+- [x] **Step 6: Verifikasi di layar HP**
 
 Pakai emulasi 375×812 di browser, atau buka dari HP di WiFi yang sama: `http://<IP-PC>:8000/?demo=demo/tray-12.5.png`. Pastikan:
 - Tombol ukuran tidak terpotong, foto memenuhi lebar layar, tanda ✗ dan ? terbaca, dan ketuk-detail berfungsi.
 - Di HP sungguhan, catat teks `Selesai dalam … detik`. Harus di bawah 3 detik.
 - Kalau ada iPhone, coba juga di Safari untuk mengecek batas memori canvas: memilih foto kamera 12 MP dari galeri tidak boleh membuat halaman crash.
 
-- [ ] **Step 7: Jalankan semua uji**
+> **Status verifikasi (2026-10-02):** desktop dan emulasi HP 375 px sudah dicek: semua poin Step 5 cocok, proses 0,2–0,8 detik, CSV ber-BOM dan CRLF, 100 baris. **Menunggu user:** buka CSV di Excel, catat waktu di HP sungguhan, dan coba di iPhone (Safari).
+
+- [x] **Step 7: Jalankan semua uji**
 
 Run: `npm test`
 Expected: `ℹ tests 26` · `ℹ pass 26` · `ℹ fail 0`
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add index.html tools/make-demo.js demo/tray-12.5.png .claude/launch.json
