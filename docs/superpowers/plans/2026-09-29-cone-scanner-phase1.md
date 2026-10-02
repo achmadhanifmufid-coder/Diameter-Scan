@@ -61,7 +61,7 @@
   - `localScale(H, x, y) → number` (px per mm di sekitar titik tray (x, y) mm)
   - `fitHomography(src: [x,y][], dst: [u,v][]) → H | null` (≥ 4 pasang, kuadrat terkecil)
 
-- [ ] **Step 1: Buat `package.json` dan `.gitignore`**
+- [x] **Step 1: Buat `package.json` dan `.gitignore`**
 
 `package.json`:
 ```json
@@ -83,7 +83,7 @@ samples/
 poc/
 ```
 
-- [ ] **Step 2: Tulis uji yang gagal — `test/homography.test.js`**
+- [x] **Step 2: Tulis uji yang gagal — `test/homography.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -120,12 +120,12 @@ test('localScale = px per mm', () => {
 });
 ```
 
-- [ ] **Step 3: Jalankan uji, pastikan gagal**
+- [x] **Step 3: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/homography.test.js`
 Expected: FAIL — `Cannot find module '...homography.js'`
 
-- [ ] **Step 4: Tulis `homography.js`**
+- [x] **Step 4: Tulis `homography.js`**
 
 ```js
 // Homografi 3×3 (row-major, H[8] = 1): memetakan titik tray (mm) ↔ foto (px).
@@ -221,12 +221,12 @@ export function fitHomography(src, dst) {
 }
 ```
 
-- [ ] **Step 5: Jalankan uji, pastikan lolos**
+- [x] **Step 5: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 4` · `ℹ pass 4` · `ℹ fail 0`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add package.json .gitignore homography.js test/homography.test.js
