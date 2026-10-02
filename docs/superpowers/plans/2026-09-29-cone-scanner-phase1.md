@@ -61,7 +61,7 @@
   - `localScale(H, x, y) → number` (px per mm di sekitar titik tray (x, y) mm)
   - `fitHomography(src: [x,y][], dst: [u,v][]) → H | null` (≥ 4 pasang, kuadrat terkecil)
 
-- [ ] **Step 1: Buat `package.json` dan `.gitignore`**
+- [x] **Step 1: Buat `package.json` dan `.gitignore`**
 
 `package.json`:
 ```json
@@ -83,7 +83,7 @@ samples/
 poc/
 ```
 
-- [ ] **Step 2: Tulis uji yang gagal — `test/homography.test.js`**
+- [x] **Step 2: Tulis uji yang gagal — `test/homography.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -120,12 +120,12 @@ test('localScale = px per mm', () => {
 });
 ```
 
-- [ ] **Step 3: Jalankan uji, pastikan gagal**
+- [x] **Step 3: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/homography.test.js`
 Expected: FAIL — `Cannot find module '...homography.js'`
 
-- [ ] **Step 4: Tulis `homography.js`**
+- [x] **Step 4: Tulis `homography.js`**
 
 ```js
 // Homografi 3×3 (row-major, H[8] = 1): memetakan titik tray (mm) ↔ foto (px).
@@ -221,12 +221,12 @@ export function fitHomography(src, dst) {
 }
 ```
 
-- [ ] **Step 5: Jalankan uji, pastikan lolos**
+- [x] **Step 5: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 4` · `ℹ pass 4` · `ℹ fail 0`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add package.json .gitignore homography.js test/homography.test.js
@@ -254,7 +254,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `toGray(rgba, width, height) → Float32Array`
   - `classify(dMm, nominalMm, tolMm) → 'PASS' | 'REJECT'`
 
-- [ ] **Step 1: Tulis `config.js`**
+- [x] **Step 1: Tulis `config.js`**
 
 ```js
 // Pengaturan bersama untuk semua HP. Ubah di sini, lalu deploy ulang.
@@ -279,7 +279,7 @@ export const CONFIG = {
 };
 ```
 
-- [ ] **Step 2: Tulis `test/synth.js` (pembuat foto buatan, dipakai uji Task 3–4 dan demo Task 6)**
+- [x] **Step 2: Tulis `test/synth.js` (pembuat foto buatan, dipakai uji Task 3–4 dan demo Task 6)**
 
 ```js
 // Pembuat foto tray buatan untuk uji: bukaan gelap (lingkaran/oval) di latar terang, ukuran pasti.
@@ -367,7 +367,7 @@ export function makeTray({
 }
 ```
 
-- [ ] **Step 3: Tulis uji yang gagal — `test/measure.test.js`**
+- [x] **Step 3: Tulis uji yang gagal — `test/measure.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -388,12 +388,12 @@ test('classify: batas ikut PASS, dihitung dalam 0,01 mm', () => {
 });
 ```
 
-- [ ] **Step 4: Jalankan uji, pastikan gagal**
+- [x] **Step 4: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/measure.test.js`
 Expected: FAIL — `Cannot find module '...measure.js'`
 
-- [ ] **Step 5: Tulis `measure.js` (versi awal)**
+- [x] **Step 5: Tulis `measure.js` (versi awal)**
 
 ```js
 // Inti pengukuran: fungsi murni tanpa DOM, jadi bisa diuji di Node dan dipindah ke server.
@@ -416,12 +416,12 @@ export function classify(dMm, nominalMm, tolMm) {
 }
 ```
 
-- [ ] **Step 6: Jalankan uji, pastikan lolos**
+- [x] **Step 6: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 6` · `ℹ pass 6` · `ℹ fail 0`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add config.js test/synth.js measure.js test/measure.test.js
@@ -448,7 +448,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `cand`: array sepanjang `rows·cols`, indeks `row·cols + col` → kandidat `{x, y}` atau `null`.
     - `error`: `'TOO_FEW_CONES'` atau `'TRAY_NOT_COMPLETE'`.
 
-- [ ] **Step 1: Tulis uji yang gagal — `test/grid.test.js`**
+- [x] **Step 1: Tulis uji yang gagal — `test/grid.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -508,18 +508,18 @@ test('fitGrid: tray terpotong + miring ekstrem → TRAY_NOT_COMPLETE, bukan hasi
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/grid.test.js`
 Expected: FAIL — `findCandidates is not a function` (atau SyntaxError: export tidak ditemukan)
 
-- [ ] **Step 3: Tambah import di baris pertama `measure.js` (tepat di bawah komentar judul)**
+- [x] **Step 3: Tambah import di baris pertama `measure.js` (tepat di bawah komentar judul)**
 
 ```js
 import { apply, invert, localScale, fitHomography } from './homography.js';
 ```
 
-- [ ] **Step 4: Tambah `findCandidates` dan `fitGrid` di akhir `measure.js`**
+- [x] **Step 4: Tambah `findCandidates` dan `fitGrid` di akhir `measure.js`**
 
 ```js
 // Bukaan cone = blob gelap yang kira-kira bulat. Dicari di salinan kecil (±1000 px) supaya cepat.
@@ -628,12 +628,12 @@ export function fitGrid(cands, cfg) {
 }
 ```
 
-- [ ] **Step 5: Jalankan uji, pastikan lolos**
+- [x] **Step 5: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 12` · `ℹ pass 12` · `ℹ fail 0`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add measure.js test/grid.test.js
@@ -660,7 +660,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `{ ok: true, nominalMm, lowerMm, upperMm, pxPerMm, blurMm, slots, counts: { PASS, REJECT, CEK_MANUAL }, warnings: [{ code: 'SIZE_MISMATCH', medianMm, suggestedMm }] }`
     - `slots` = 100 item `{ pos: 'A1', row, col, x, y, status, rPx?, dRaw?, dMm?, dMinMm?, dMaxMm?, validRays?, rmsMm?, blurPx? }`. Field bertanda `?` hanya ada kalau tepi ditemukan. `x`/`y` adalah posisi px di foto; `dMm`, `dMinMm`, dan `dMaxMm` sudah dikalibrasi.
 
-- [ ] **Step 1: Ganti seluruh isi `test/measure.test.js` (uji yang gagal)**
+- [x] **Step 1: Ganti seluruh isi `test/measure.test.js` (uji yang gagal)**
 
 ```js
 import { test } from 'node:test';
@@ -767,12 +767,12 @@ test('foto buram (blur 0,5 mm) → BLURRY', () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/measure.test.js`
 Expected: FAIL — `measureTray` tidak diekspor
 
-- [ ] **Step 3: Ganti baris import di `measure.js` dan tambah konstanta tepat di bawahnya**
+- [x] **Step 3: Ganti baris import di `measure.js` dan tambah konstanta tepat di bawahnya**
 
 ```js
 import { apply, invert, localScale, leastSquares, fitHomography } from './homography.js';
@@ -781,7 +781,7 @@ export const RAYS = 180;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 ```
 
-- [ ] **Step 4: Tambah fungsi pengukuran di akhir `measure.js`**
+- [x] **Step 4: Tambah fungsi pengukuran di akhir `measure.js`**
 
 ```js
 function sample(g, w, h, x, y) {
@@ -907,12 +907,12 @@ export function measureTray(gray, w, h, nominalMm, cfg, sizesMm = cfg.sizesMm) {
 }
 ```
 
-- [ ] **Step 5: Jalankan uji, pastikan lolos**
+- [x] **Step 5: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 23` · `ℹ pass 23` · `ℹ fail 0` (±10 detik; uji gambar buatan butuh ±0,5–1 detik masing-masing)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add measure.js test/measure.test.js
@@ -937,7 +937,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `toCsv(result, { time: Date, fileName, note, ms }) → string` (BOM + CRLF)
   - `csvFileName(time: Date, nominalMm) → string`
 
-- [ ] **Step 1: Tulis uji yang gagal — `test/csv.test.js`**
+- [x] **Step 1: Tulis uji yang gagal — `test/csv.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -975,12 +975,12 @@ test('csvFileName: tanggal, jam, ukuran', () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/csv.test.js`
 Expected: FAIL — `Cannot find module '...csv.js'`
 
-- [ ] **Step 3: Tulis `csv.js`**
+- [x] **Step 3: Tulis `csv.js`**
 
 ```js
 // CSV untuk Excel berbahasa Indonesia: pemisah ';', desimal ',', UTF-8 dengan BOM, baris CRLF.
@@ -1014,12 +1014,12 @@ export function toCsv(result, { time, fileName = '', note = '', ms = '' }) {
 export const csvFileName = (time, nominalMm) => `scan_${day(time)}_${clock(time, '-')}_${nominalMm}.csv`;
 ```
 
-- [ ] **Step 4: Jalankan uji, pastikan lolos**
+- [x] **Step 4: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 26` · `ℹ pass 26` · `ℹ fail 0`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add csv.js test/csv.test.js
@@ -1042,7 +1042,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `CONFIG`; `toGray`, `measureTray`, `Result` (Task 4); `fmt`, `toCsv`, `csvFileName` (Task 5); `makeTray` (Task 2).
 - Produces: halaman `index.html`. Parameter URL `?demo=<path same-origin>` langsung memproses gambar itu.
 
-- [ ] **Step 1: Tulis `tools/make-demo.js`**
+- [x] **Step 1: Tulis `tools/make-demo.js`**
 
 ```js
 // Membuat foto tray buatan untuk mencoba app tanpa tray fisik: node tools/make-demo.js → demo/tray-12.5.png
@@ -1076,12 +1076,12 @@ writeFileSync('demo/tray-12.5.png', png(t.gray, t.width, t.height));
 console.log(`demo/tray-12.5.png ${t.width}×${t.height}`);
 ```
 
-- [ ] **Step 2: Buat gambar demo**
+- [x] **Step 2: Buat gambar demo**
 
 Run: `node tools/make-demo.js`
 Expected: `demo/tray-12.5.png 1540×1540` (file ±1,1 MB)
 
-- [ ] **Step 3: Tulis `index.html`**
+- [x] **Step 3: Tulis `index.html`**
 
 ```html
 <!doctype html>
@@ -1300,7 +1300,7 @@ if (demo && new URL(demo, location.href).origin === location.origin) {
 </html>
 ```
 
-- [ ] **Step 4: Ganti isi `.claude/launch.json` supaya menyajikan folder repo**
+- [x] **Step 4: Ganti isi `.claude/launch.json` supaya menyajikan folder repo**
 
 ```json
 {
@@ -1316,7 +1316,7 @@ if (demo && new URL(demo, location.href).origin === location.origin) {
 }
 ```
 
-- [ ] **Step 5: Verifikasi di browser (desktop)**
+- [x] **Step 5: Verifikasi di browser (desktop)**
 
 Jalankan server lewat preview "scan-cone", atau `python -m http.server 8000` dari folder repo. Buka `http://localhost:8000/?demo=demo/tray-12.5.png`. Yang harus terlihat:
 - Teks status `Selesai dalam 0,x detik.` (di bawah 3 detik).
@@ -1331,19 +1331,21 @@ Jalankan server lewat preview "scan-cone", atau `python -m http.server 8000` dar
 - Klik **+**, isi `abc`: muncul alert `Ukuran harus angka 5–20 mm dan belum ada di daftar.`
 - Klik **Download CSV**: file `scan_…_12.5.csv` terunduh. Buka di Excel dan pastikan kolomnya terpisah benar dan angkanya berkoma.
 
-- [ ] **Step 6: Verifikasi di layar HP**
+- [x] **Step 6: Verifikasi di layar HP**
 
 Pakai emulasi 375×812 di browser, atau buka dari HP di WiFi yang sama: `http://<IP-PC>:8000/?demo=demo/tray-12.5.png`. Pastikan:
 - Tombol ukuran tidak terpotong, foto memenuhi lebar layar, tanda ✗ dan ? terbaca, dan ketuk-detail berfungsi.
 - Di HP sungguhan, catat teks `Selesai dalam … detik`. Harus di bawah 3 detik.
 - Kalau ada iPhone, coba juga di Safari untuk mengecek batas memori canvas: memilih foto kamera 12 MP dari galeri tidak boleh membuat halaman crash.
 
-- [ ] **Step 7: Jalankan semua uji**
+> **Status verifikasi (2026-10-02):** desktop dan emulasi HP 375 px sudah dicek: semua poin Step 5 cocok, proses 0,2–0,8 detik, CSV ber-BOM dan CRLF, 100 baris. **Menunggu user:** buka CSV di Excel, catat waktu di HP sungguhan, dan coba di iPhone (Safari).
+
+- [x] **Step 7: Jalankan semua uji**
 
 Run: `npm test`
 Expected: `ℹ tests 26` · `ℹ pass 26` · `ℹ fail 0`
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add index.html tools/make-demo.js demo/tray-12.5.png .claude/launch.json
@@ -1369,7 +1371,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `formatReport(report) → string`
   - CLI: `node tools/report.js [folder]`, membaca `folder/gauge.csv`, `folder/layout_*.csv`, dan `folder/scans/*.csv`.
 
-- [ ] **Step 1: Tulis uji yang gagal — `test/report.test.js`**
+- [x] **Step 1: Tulis uji yang gagal — `test/report.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -1430,12 +1432,12 @@ test('analyze: uji yang belum dikerjakan → BELUM, bukan GAGAL', () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/report.test.js`
 Expected: FAIL — `Cannot find module '...tools/report.js'`
 
-- [ ] **Step 3: Tulis `tools/report.js`**
+- [x] **Step 3: Tulis `tools/report.js`**
 
 ```js
 // Laporan PoC: bandingkan CSV hasil scan dengan gauge, hitung kalibrasi (a, b), cek 6 kriteria lolos.
@@ -1583,12 +1585,12 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 }
 ```
 
-- [ ] **Step 4: Jalankan uji, pastikan lolos**
+- [x] **Step 4: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 31` · `ℹ pass 31` · `ℹ fail 0`
 
-- [ ] **Step 5: Smoke test CLI dengan data kecil**
+- [x] **Step 5: Smoke test CLI dengan data kecil**
 
 Pakai folder sementara di luar repo: folder scratchpad sesi, atau `mktemp -d`. **Jangan** pakai `poc/`, karena folder itu nanti berisi data PoC asli.
 
@@ -1604,7 +1606,7 @@ rm -rf "$SMOKE"
 
 Expected: baris pertama `Kalibrasi (uji 2, HP A54): d_kal = … × d_mentah + …`, lalu `LOLOS  1. Pengulangan …`, `BELUM  2. Akurasi …` (belum ada uji 3–5), `BELUM  4a. …`, `BELUM  4b. …`, `LOLOS  5. …`, `LOLOS  6. …`, dan `Gauge: 2×SD ulang = 0,018 mm`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tools/report.js test/report.test.js
@@ -1624,7 +1626,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: semua task sebelumnya.
 - Produces: dokumentasi singkat dan app yang ter-hosting (URL HTTPS) setelah user mengonfirmasi.
 
-- [ ] **Step 1: Tulis `README.md`**
+- [x] **Step 1: Tulis `README.md`**
 
 ~~~markdown
 # Scan Cone
@@ -1655,12 +1657,12 @@ npm test
 - `node tools/make-demo.js` membuat ulang gambar demo.
 ~~~
 
-- [ ] **Step 2: Jalankan semua uji**
+- [x] **Step 2: Jalankan semua uji**
 
 Run: `npm test`
 Expected: `ℹ tests 31` · `ℹ pass 31` · `ℹ fail 0`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md

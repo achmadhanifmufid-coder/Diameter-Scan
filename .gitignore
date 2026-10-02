@@ -1,0 +1,4 @@
+node_modules/
+# Data produksi: jangan ikut ter-commit (repo bisa publik untuk hosting)
+samples/
+poc/
