@@ -2,6 +2,8 @@
 
 QC scanner diameter atas pre-roll cone. Foto tray 10×10 dari HP → diameter bukaan setiap cone → PASS / REJECT / CEK MANUAL. Semua proses berjalan di browser HP; foto tidak di-upload ke mana pun.
 
+Alamat app: https://scancone.pages.dev/ (cadangan: https://achmadhanifmufid-coder.github.io/Diameter-Scan/). Setiap push ke `main` tayang otomatis di keduanya.
+
 Desain lengkap: `docs/superpowers/specs/2026-09-29-cone-scanner-design.md`
 
 ## Mencoba di PC
