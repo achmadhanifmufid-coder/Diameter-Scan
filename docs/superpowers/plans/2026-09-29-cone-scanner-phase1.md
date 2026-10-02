@@ -660,7 +660,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     - `{ ok: true, nominalMm, lowerMm, upperMm, pxPerMm, blurMm, slots, counts: { PASS, REJECT, CEK_MANUAL }, warnings: [{ code: 'SIZE_MISMATCH', medianMm, suggestedMm }] }`
     - `slots` = 100 item `{ pos: 'A1', row, col, x, y, status, rPx?, dRaw?, dMm?, dMinMm?, dMaxMm?, validRays?, rmsMm?, blurPx? }`. Field bertanda `?` hanya ada kalau tepi ditemukan. `x`/`y` adalah posisi px di foto; `dMm`, `dMinMm`, dan `dMaxMm` sudah dikalibrasi.
 
-- [ ] **Step 1: Ganti seluruh isi `test/measure.test.js` (uji yang gagal)**
+- [x] **Step 1: Ganti seluruh isi `test/measure.test.js` (uji yang gagal)**
 
 ```js
 import { test } from 'node:test';
@@ -767,12 +767,12 @@ test('foto buram (blur 0,5 mm) → BLURRY', () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/measure.test.js`
 Expected: FAIL — `measureTray` tidak diekspor
 
-- [ ] **Step 3: Ganti baris import di `measure.js` dan tambah konstanta tepat di bawahnya**
+- [x] **Step 3: Ganti baris import di `measure.js` dan tambah konstanta tepat di bawahnya**
 
 ```js
 import { apply, invert, localScale, leastSquares, fitHomography } from './homography.js';
@@ -781,7 +781,7 @@ export const RAYS = 180;
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 ```
 
-- [ ] **Step 4: Tambah fungsi pengukuran di akhir `measure.js`**
+- [x] **Step 4: Tambah fungsi pengukuran di akhir `measure.js`**
 
 ```js
 function sample(g, w, h, x, y) {
@@ -907,12 +907,12 @@ export function measureTray(gray, w, h, nominalMm, cfg, sizesMm = cfg.sizesMm) {
 }
 ```
 
-- [ ] **Step 5: Jalankan uji, pastikan lolos**
+- [x] **Step 5: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 23` · `ℹ pass 23` · `ℹ fail 0` (±10 detik; uji gambar buatan butuh ±0,5–1 detik masing-masing)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add measure.js test/measure.test.js
