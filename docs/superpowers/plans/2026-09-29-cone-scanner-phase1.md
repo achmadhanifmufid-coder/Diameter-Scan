@@ -1626,7 +1626,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: semua task sebelumnya.
 - Produces: dokumentasi singkat dan app yang ter-hosting (URL HTTPS) setelah user mengonfirmasi.
 
-- [ ] **Step 1: Tulis `README.md`**
+- [x] **Step 1: Tulis `README.md`**
 
 ~~~markdown
 # Scan Cone
@@ -1657,12 +1657,12 @@ npm test
 - `node tools/make-demo.js` membuat ulang gambar demo.
 ~~~
 
-- [ ] **Step 2: Jalankan semua uji**
+- [x] **Step 2: Jalankan semua uji**
 
 Run: `npm test`
 Expected: `ℹ tests 31` · `ℹ pass 31` · `ℹ fail 0`
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add README.md
