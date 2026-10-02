@@ -254,7 +254,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `toGray(rgba, width, height) → Float32Array`
   - `classify(dMm, nominalMm, tolMm) → 'PASS' | 'REJECT'`
 
-- [ ] **Step 1: Tulis `config.js`**
+- [x] **Step 1: Tulis `config.js`**
 
 ```js
 // Pengaturan bersama untuk semua HP. Ubah di sini, lalu deploy ulang.
@@ -279,7 +279,7 @@ export const CONFIG = {
 };
 ```
 
-- [ ] **Step 2: Tulis `test/synth.js` (pembuat foto buatan, dipakai uji Task 3–4 dan demo Task 6)**
+- [x] **Step 2: Tulis `test/synth.js` (pembuat foto buatan, dipakai uji Task 3–4 dan demo Task 6)**
 
 ```js
 // Pembuat foto tray buatan untuk uji: bukaan gelap (lingkaran/oval) di latar terang, ukuran pasti.
@@ -367,7 +367,7 @@ export function makeTray({
 }
 ```
 
-- [ ] **Step 3: Tulis uji yang gagal — `test/measure.test.js`**
+- [x] **Step 3: Tulis uji yang gagal — `test/measure.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -388,12 +388,12 @@ test('classify: batas ikut PASS, dihitung dalam 0,01 mm', () => {
 });
 ```
 
-- [ ] **Step 4: Jalankan uji, pastikan gagal**
+- [x] **Step 4: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/measure.test.js`
 Expected: FAIL — `Cannot find module '...measure.js'`
 
-- [ ] **Step 5: Tulis `measure.js` (versi awal)**
+- [x] **Step 5: Tulis `measure.js` (versi awal)**
 
 ```js
 // Inti pengukuran: fungsi murni tanpa DOM, jadi bisa diuji di Node dan dipindah ke server.
@@ -416,12 +416,12 @@ export function classify(dMm, nominalMm, tolMm) {
 }
 ```
 
-- [ ] **Step 6: Jalankan uji, pastikan lolos**
+- [x] **Step 6: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 6` · `ℹ pass 6` · `ℹ fail 0`
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add config.js test/synth.js measure.js test/measure.test.js
