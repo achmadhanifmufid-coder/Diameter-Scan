@@ -1371,7 +1371,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `formatReport(report) → string`
   - CLI: `node tools/report.js [folder]`, membaca `folder/gauge.csv`, `folder/layout_*.csv`, dan `folder/scans/*.csv`.
 
-- [ ] **Step 1: Tulis uji yang gagal — `test/report.test.js`**
+- [x] **Step 1: Tulis uji yang gagal — `test/report.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -1432,12 +1432,12 @@ test('analyze: uji yang belum dikerjakan → BELUM, bukan GAGAL', () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/report.test.js`
 Expected: FAIL — `Cannot find module '...tools/report.js'`
 
-- [ ] **Step 3: Tulis `tools/report.js`**
+- [x] **Step 3: Tulis `tools/report.js`**
 
 ```js
 // Laporan PoC: bandingkan CSV hasil scan dengan gauge, hitung kalibrasi (a, b), cek 6 kriteria lolos.
@@ -1585,12 +1585,12 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 }
 ```
 
-- [ ] **Step 4: Jalankan uji, pastikan lolos**
+- [x] **Step 4: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 31` · `ℹ pass 31` · `ℹ fail 0`
 
-- [ ] **Step 5: Smoke test CLI dengan data kecil**
+- [x] **Step 5: Smoke test CLI dengan data kecil**
 
 Pakai folder sementara di luar repo: folder scratchpad sesi, atau `mktemp -d`. **Jangan** pakai `poc/`, karena folder itu nanti berisi data PoC asli.
 
@@ -1606,7 +1606,7 @@ rm -rf "$SMOKE"
 
 Expected: baris pertama `Kalibrasi (uji 2, HP A54): d_kal = … × d_mentah + …`, lalu `LOLOS  1. Pengulangan …`, `BELUM  2. Akurasi …` (belum ada uji 3–5), `BELUM  4a. …`, `BELUM  4b. …`, `LOLOS  5. …`, `LOLOS  6. …`, dan `Gauge: 2×SD ulang = 0,018 mm`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add tools/report.js test/report.test.js
