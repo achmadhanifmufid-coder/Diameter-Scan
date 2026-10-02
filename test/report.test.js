@@ -47,6 +47,15 @@ test('analyze: 3 CEK MANUAL dalam satu scan → kriteria 5 gagal', () => {
   assert.equal(r.criteria.find((c) => c.name.startsWith('5.')).pass, false);
 });
 
+test('analyze: nama HP boleh berisi spasi (Redmi Note 12 ≠ Redmi 13)', () => {
+  const d = dataset();
+  d.scans = d.scans.filter((s) => !s.file.startsWith('u5'));
+  d.scans.push(scan('u5_a.csv', 'layout=T hp=Redmi Note 12 lampu=1 uji=5', TENGAH, { offset: 0.01 }));
+  d.scans.push(scan('u5_b.csv', 'layout=T hp=Redmi 13 lampu=1 uji=5', TENGAH, { offset: 0.05 }));
+  const phones = analyze(d).criteria.find((c) => c.name.startsWith('4a')).value;
+  assert.deepEqual(phones.map((p) => p.hp).sort(), ['Redmi 13', 'Redmi Note 12']);
+});
+
 test('analyze: uji yang belum dikerjakan → BELUM, bukan GAGAL', () => {
   const d = dataset();
   d.scans = d.scans.filter((s) => !s.file.startsWith('u5') && !s.file.startsWith('u4'));

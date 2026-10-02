@@ -13,7 +13,8 @@ const num = (s) => (s === undefined || s === '' ? NaN : Number(String(s).replace
 const mean = (v) => v.reduce((a, b) => a + b, 0) / v.length;
 const variance = (v) => (v.length < 2 ? NaN : v.reduce((a, b) => a + (b - mean(v)) ** 2, 0) / (v.length - 1));
 const share = (v, ok) => (v.length ? v.filter(ok).length / v.length : NaN);
-const tags = (note) => Object.fromEntries([...String(note ?? '').matchAll(/(\w+)=(\S+)/g)].map((m) => [m[1], m[2]]));
+// "layout=A hp=Redmi Note 12 uji=2" → nilai boleh berspasi; berakhir di kunci berikutnya.
+const tags = (note) => Object.fromEntries([...String(note ?? '').matchAll(/(\w+)=(.*?)(?=\s+\w+=|\s*$)/g)].map((m) => [m[1], m[2]]));
 const isEdge = (pos) => /^[AJ]/.test(pos) || /^[A-J](1|10)$/.test(pos);
 
 function groupBy(list, key) {
