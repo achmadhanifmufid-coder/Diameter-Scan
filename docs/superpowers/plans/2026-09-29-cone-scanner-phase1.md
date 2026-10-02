@@ -937,7 +937,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
   - `toCsv(result, { time: Date, fileName, note, ms }) → string` (BOM + CRLF)
   - `csvFileName(time: Date, nominalMm) → string`
 
-- [ ] **Step 1: Tulis uji yang gagal — `test/csv.test.js`**
+- [x] **Step 1: Tulis uji yang gagal — `test/csv.test.js`**
 
 ```js
 import { test } from 'node:test';
@@ -975,12 +975,12 @@ test('csvFileName: tanggal, jam, ukuran', () => {
 });
 ```
 
-- [ ] **Step 2: Jalankan uji, pastikan gagal**
+- [x] **Step 2: Jalankan uji, pastikan gagal**
 
 Run: `node --test test/csv.test.js`
 Expected: FAIL — `Cannot find module '...csv.js'`
 
-- [ ] **Step 3: Tulis `csv.js`**
+- [x] **Step 3: Tulis `csv.js`**
 
 ```js
 // CSV untuk Excel berbahasa Indonesia: pemisah ';', desimal ',', UTF-8 dengan BOM, baris CRLF.
@@ -1014,12 +1014,12 @@ export function toCsv(result, { time, fileName = '', note = '', ms = '' }) {
 export const csvFileName = (time, nominalMm) => `scan_${day(time)}_${clock(time, '-')}_${nominalMm}.csv`;
 ```
 
-- [ ] **Step 4: Jalankan uji, pastikan lolos**
+- [x] **Step 4: Jalankan uji, pastikan lolos**
 
 Run: `npm test`
 Expected: `ℹ tests 26` · `ℹ pass 26` · `ℹ fail 0`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add csv.js test/csv.test.js
